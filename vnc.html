@@ -15,7 +15,7 @@
     or the fragment:
         http://example.com/#host=HOST&port=PORT&encrypt=1
     -->
-    <title>noVNC</title>
+    <title>IB Gateway GUI</title>
 
     <meta charset="utf-8" />
 
@@ -314,6 +314,35 @@
 
     <!-- This is where the RFB elements will attach -->
     <div id="noVNC_container">
+        <div style="background: #eee; color: #333; border: 2px solid #E0E0E0;">
+            <h2 style="background-color: #494949; padding: 5px; color: #fff; font-size: larger;margin: 0px;">
+                IB Gateway GUI Tips
+            </h2>
+            <ul>
+                <li>
+                    The screen below will be black if IB Gateway is not running.
+                    Start IB Gateway with: <code>quantrocket launchpad start</code>
+	            </li>
+                <li>
+                 Connection Status:
+                    <ul>
+                        <li>
+                            <em>Interactive Brokers API Server</em>: Indicates whether IB
+                            Gateway is connected to the IB servers. Should always be green/connected. Red indicates a network problem.
+                        </li>
+                        <li>
+                            <em>API Client</em>: Indicates the number of QuantRocket services
+                             currently connected to IB Gateway. Usually green but
+                             might be red if QuantRocket isn't doing much right now.
+                        </li>
+                	</ul>
+                </li>
+                <li>
+                    Close the browser tab to end this VNC session but leave IB Gateway
+                    running.
+                </li>
+            </ul>
+        </div>
         <!-- Note that Google Chrome on Android doesn't respect any of these,
              html attributes which attempt to disable text suggestions on the
              on-screen keyboard. Let's hope Chrome implements the ime-mode

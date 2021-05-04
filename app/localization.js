@@ -1,6 +1,6 @@
 /*
  * noVNC: HTML5 VNC client
- * Copyright (C) 2012 Joel Martin
+ * Copyright (C) 2018 The noVNC Authors
  * Licensed under MPL 2.0 (see LICENSE.txt)
  *
  * See README.md for usage and integration instructions.
@@ -53,10 +53,12 @@ export class Localizer {
                     .replace("_", "-")
                     .split("-");
 
-                if (userLang[0] !== supLang[0])
+                if (userLang[0] !== supLang[0]) {
                     continue;
-                if (userLang[1] !== supLang[1])
+                }
+                if (userLang[1] !== supLang[1]) {
                     continue;
+                }
 
                 this.language = supportedLanguages[j];
                 return;
@@ -69,10 +71,12 @@ export class Localizer {
                     .replace("_", "-")
                     .split("-");
 
-                if (userLang[0] !== supLang[0])
+                if (userLang[0] !== supLang[0]) {
                     continue;
-                if (supLang[1] !== undefined)
+                }
+                if (supLang[1] !== undefined) {
                     continue;
+                }
 
                 this.language = supportedLanguages[j];
                 return;
@@ -132,7 +136,7 @@ export class Localizer {
                 }
                 if (elem.hasAttribute("label") &&
                     isAnyOf(elem.tagName, ["MENUITEM", "MENU", "OPTGROUP",
-                                   "OPTION", "TRACK"])) {
+                                           "OPTION", "TRACK"])) {
                     translateAttribute(elem, "label");
                 }
                 // FIXME: Should update "lang"

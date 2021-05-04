@@ -8,8 +8,8 @@ import * as Log from './util/logging.js';
 
 export default {
     /* Convert data (an array of integers) to a Base64 string. */
-    toBase64Table : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='.split(''),
-    base64Pad     : '=',
+    toBase64Table: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='.split(''),
+    base64Pad: '=',
 
     encode(data) {
         "use strict";
@@ -43,7 +43,8 @@ export default {
     },
 
     /* Convert Base64 data to a string */
-    toBinaryTable : [
+    /* eslint-disable comma-spacing */
+    toBinaryTable: [
         -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
         -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
         -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,62, -1,-1,-1,63,
@@ -53,16 +54,15 @@ export default {
         -1,26,27,28, 29,30,31,32, 33,34,35,36, 37,38,39,40,
         41,42,43,44, 45,46,47,48, 49,50,51,-1, -1,-1,-1,-1
     ],
+    /* eslint-enable comma-spacing */
 
-    decode(data, offset) {
-        offset = typeof(offset) !== 'undefined' ? offset : 0;
-
-        let data_length = data.indexOf('=') - offset;
-        if (data_length < 0) { data_length = data.length - offset; }
+    decode(data, offset = 0) {
+        let dataLength = data.indexOf('=') - offset;
+        if (dataLength < 0) { dataLength = data.length - offset; }
 
         /* Every four characters is 3 resulting numbers */
-        const result_length = (data_length >> 2) * 3 + Math.floor((data_length % 4) / 1.5);
-        const result = new Array(result_length);
+        const resultLength = (dataLength >> 2) * 3 + Math.floor((dataLength % 4) / 1.5);
+        const result = new Array(resultLength);
 
         // Convert one by one.
 

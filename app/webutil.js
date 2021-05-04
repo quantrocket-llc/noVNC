@@ -1,32 +1,31 @@
 /*
  * noVNC: HTML5 VNC client
- * Copyright (C) 2012 Joel Martin
- * Copyright (C) 2013 NTT corp.
+ * Copyright (C) 2019 The noVNC Authors
  * Licensed under MPL 2.0 (see LICENSE.txt)
  *
  * See README.md for usage and integration instructions.
  */
 
-import { init_logging as main_init_logging } from '../core/util/logging.js';
+import { initLogging as mainInitLogging } from '../core/util/logging.js';
 
 // init log level reading the logging HTTP param
-export function init_logging (level) {
+export function initLogging(level) {
     "use strict";
     if (typeof level !== "undefined") {
-        main_init_logging(level);
+        mainInitLogging(level);
     } else {
         const param = document.location.href.match(/logging=([A-Za-z0-9._-]*)/);
-        main_init_logging(param || undefined);
+        mainInitLogging(param || undefined);
     }
 }
 
 // Read a query string variable
-export function getQueryVar (name, defVal) {
+export function getQueryVar(name, defVal) {
     "use strict";
     const re = new RegExp('.*[?&]' + name + '=([^&#]*)'),
         match = document.location.href.match(re);
     if (typeof defVal === 'undefined') { defVal = null; }
-    
+
     if (match) {
         return decodeURIComponent(match[1]);
     }
@@ -35,7 +34,7 @@ export function getQueryVar (name, defVal) {
 }
 
 // Read a hash fragment variable
-export function getHashVar (name, defVal) {
+export function getHashVar(name, defVal) {
     "use strict";
     const re = new RegExp('.*[&#]' + name + '=([^&]*)'),
         match = document.location.hash.match(re);
@@ -50,7 +49,7 @@ export function getHashVar (name, defVal) {
 
 // Read a variable from the fragment or the query string
 // Fragment takes precedence
-export function getConfigVar (name, defVal) {
+export function getConfigVar(name, defVal) {
     "use strict";
     const val = getHashVar(name);
 
@@ -66,7 +65,7 @@ export function getConfigVar (name, defVal) {
  */
 
 // No days means only for this browser session
-export function createCookie (name, value, days) {
+export function createCookie(name, value, days) {
     "use strict";
     let date, expires;
     if (days) {
@@ -86,7 +85,7 @@ export function createCookie (name, value, days) {
     document.cookie = name + "=" + value + expires + "; path=/" + secure;
 }
 
-export function readCookie (name, defaultValue) {
+export function readCookie(name, defaultValue) {
     "use strict";
     const nameEQ = name + "=";
     const ca = document.cookie.split(';');
@@ -104,7 +103,7 @@ export function readCookie (name, defaultValue) {
     return (typeof defaultValue !== 'undefined') ? defaultValue : null;
 }
 
-export function eraseCookie (name) {
+export function eraseCookie(name) {
     "use strict";
     createCookie(name, "", -1);
 }
@@ -115,31 +114,23 @@ export function eraseCookie (name) {
 
 let settings = {};
 
-export function initSettings (callback /*, ...callbackArgs */) {
-    "use strict";
-    const callbackArgs = Array.prototype.slice.call(arguments, 1);
-    if (window.chrome && window.chrome.storage) {
-        window.chrome.storage.sync.get((cfg) => {
-            settings = cfg;
-            if (callback) {
-                callback.apply(this, callbackArgs);
-            }
-        });
-    } else {
+export function initSettings() {
+    if (!window.chrome || !window.chrome.storage) {
         settings = {};
-        if (callback) {
-            callback.apply(this, callbackArgs);
-        }
+        return Promise.resolve();
     }
+
+    return new Promise(resolve => window.chrome.storage.sync.get(resolve))
+        .then((cfg) => { settings = cfg; });
 }
 
 // Update the settings cache, but do not write to permanent storage
-export function setSetting (name, value) {
+export function setSetting(name, value) {
     settings[name] = value;
 }
 
 // No days means only for this browser session
-export function writeSetting (name, value) {
+export function writeSetting(name, value) {
     "use strict";
     if (settings[name] === value) return;
     settings[name] = value;
@@ -150,7 +141,7 @@ export function writeSetting (name, value) {
     }
 }
 
-export function readSetting (name, defaultValue) {
+export function readSetting(name, defaultValue) {
     "use strict";
     let value;
     if ((name in settings) || (window.chrome && window.chrome.storage)) {
@@ -170,7 +161,7 @@ export function readSetting (name, defaultValue) {
     return value;
 }
 
-export function eraseSetting (name) {
+export function eraseSetting(name) {
     "use strict";
     // Deleting here means that next time the setting is read when using local
     // storage, it will be pulled from local storage again.
@@ -185,7 +176,7 @@ export function eraseSetting (name) {
     }
 }
 
-export function injectParamIfMissing (path, param, value) {
+export function injectParamIfMissing(path, param, value) {
     // force pretend that we're dealing with a relative path
     // (assume that we wanted an extra if we pass one in)
     path = "/" + path;
@@ -193,7 +184,7 @@ export function injectParamIfMissing (path, param, value) {
     const elem = document.createElement('a');
     elem.href = path;
 
-    const param_eq = encodeURIComponent(param) + "=";
+    const paramEq = encodeURIComponent(param) + "=";
     let query;
     if (elem.search) {
         query = elem.search.slice(1).split('&');
@@ -201,8 +192,8 @@ export function injectParamIfMissing (path, param, value) {
         query = [];
     }
 
-    if (!query.some(v => v.startsWith(param_eq))) {
-        query.push(param_eq + encodeURIComponent(value));
+    if (!query.some(v => v.startsWith(paramEq))) {
+        query.push(paramEq + encodeURIComponent(value));
         elem.search = "?" + query.join("&");
     }
 
@@ -219,28 +210,30 @@ export function injectParamIfMissing (path, param, value) {
 // IE11 support or polyfill promises and fetch in IE11.
 // resolve will receive an object on success, while reject
 // will receive either an event or an error on failure.
-export function fetchJSON(path, resolve, reject) {
-    // NB: IE11 doesn't support JSON as a responseType
-    const req = new XMLHttpRequest();
-    req.open('GET', path);
+export function fetchJSON(path) {
+    return new Promise((resolve, reject) => {
+        // NB: IE11 doesn't support JSON as a responseType
+        const req = new XMLHttpRequest();
+        req.open('GET', path);
 
-    req.onload = () => {
-        if (req.status === 200) {
-            let resObj;
-            try {
-                resObj = JSON.parse(req.responseText);
-            } catch (err) {
-                reject(err);
+        req.onload = () => {
+            if (req.status === 200) {
+                let resObj;
+                try {
+                    resObj = JSON.parse(req.responseText);
+                } catch (err) {
+                    reject(err);
+                }
+                resolve(resObj);
+            } else {
+                reject(new Error("XHR got non-200 status while trying to load '" + path + "': " + req.status));
             }
-            resolve(resObj);
-        } else {
-            reject(new Error("XHR got non-200 status while trying to load '" + path + "': " + req.status));
-        }
-    };
+        };
 
-    req.onerror = evt => reject(new Error("XHR encountered an error while trying to load '" + path + "': " + evt.message));
+        req.onerror = evt => reject(new Error("XHR encountered an error while trying to load '" + path + "': " + evt.message));
 
-    req.ontimeout = evt => reject(new Error("XHR timed out while trying to load '" + path + "'"));
+        req.ontimeout = evt => reject(new Error("XHR timed out while trying to load '" + path + "'"));
 
-    req.send();
+        req.send();
+    });
 }
